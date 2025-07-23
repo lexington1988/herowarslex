@@ -433,63 +433,45 @@ function handleImageClick(event) {
   const dropdown = document.createElement('select');
   dropdown.className = 'hero-tag';
   dropdown.style.position = 'absolute';
-dropdown.style.left = `${x}px`;
-dropdown.style.top = `${y}px`;
-dropdown.style.transform = 'translate(-50%, -50%)';
-dropdown.style.zIndex = 10;
-dropdown.style.fontSize = '10px';
-dropdown.style.padding = '2px 4px';
-dropdown.style.width = '100px';
-
+  dropdown.style.left = `${x}px`;
+  dropdown.style.top = `${y}px`;
+  dropdown.style.transform = 'translate(-50%, -50%)';
+  dropdown.style.zIndex = 10;
+  dropdown.style.fontSize = '10px';
+  dropdown.style.padding = '2px 4px';
+  dropdown.style.width = '100px';
 
   dropdown.innerHTML = `<option value="">-- Select Hero --</option>` +
     allHeroes.map(h => `<option value="${h}">${h}</option>`).join('');
 
   dropdown.onchange = () => {
-  const heroName = dropdown.value;
-  if (!heroName) return;
+    const heroName = dropdown.value;
+    if (!heroName) return;
 
-  // Save selection
-  clickPositions.push(heroName);
-  clickCount++;
+    clickPositions.push(heroName);
+    clickCount++;
 
-  // Create hero image badge
-const img = document.createElement('img');
-img.className = 'hero-badge';
-img.title = heroName;
+    const badge = document.createElement('img');
+    badge.className = 'hero-badge';
+    badge.title = heroName;
 
-// Convert name to filename: e.g., "K'arkh" → "karkh.png"
-const filename = heroName.toLowerCase().replace(/[^a-z0-9]/gi, '');
-img.src = `https://lexington1988.github.io/herowarslex/images/${filename}.png`;
+    const filename = heroName.toLowerCase().replace(/[^a-z0-9]/gi, '');
+    badge.src = `https://lexington1988.github.io/herowarslex/images/${filename}.png`;
 
+    badge.style.left = dropdown.style.left;
+    badge.style.top = dropdown.style.top;
 
-img.style.position = 'absolute';
-img.style.left = dropdown.style.left;
-img.style.top = dropdown.style.top;
-img.style.transform = 'translate(-50%, -50%)';
+    dropdown.remove();
+    container.appendChild(badge);
 
-dropdown.remove();
-container.appendChild(img);
-
-
-  // Position the badge where dropdown was
-  badge.style.position = 'absolute';
-  badge.style.left = dropdown.style.left;
-  badge.style.top = dropdown.style.top;
-  badge.style.transform = 'translate(-50%, -50%)';
-  badge.title = heroName;
-
-  dropdown.remove();
-  container.appendChild(badge);
-
-  if (clickCount === 5) {
-    fillEnemyTeamFromScreenshot();
-  }
-};
-
+    if (clickCount === 5) {
+      fillEnemyTeamFromScreenshot();
+    }
+  };
 
   container.appendChild(dropdown);
 }
+
 
 function fillEnemyTeamFromScreenshot() {
   const rows = document.querySelectorAll('#enemyTeam .hero-row');
@@ -503,8 +485,9 @@ function fillEnemyTeamFromScreenshot() {
 function resetScreenshotTags() {
   clickCount = 0;
   clickPositions = [];
-  document.querySelectorAll('.hero-tag').forEach(el => el.remove());
+  document.querySelectorAll('.hero-tag, .hero-badge').forEach(el => el.remove());
 }
+
 
   </script>
 </body>
