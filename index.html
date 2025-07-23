@@ -445,29 +445,48 @@ function handleImageClick(event) {
     allHeroes.map(h => `<option value="${h}">${h}</option>`).join('');
 
   dropdown.onchange = () => {
-    const heroName = dropdown.value;
-    if (!heroName) return;
+  const heroName = dropdown.value;
+  if (!heroName) return;
 
-    clickPositions.push(heroName);
-    clickCount++;
+  // Save position
+  clickPositions.push(heroName);
+  const index = clickPositions.length - 1;
 
-    const badge = document.createElement('img');
-    badge.className = 'hero-badge';
-    badge.title = heroName;
+  clickCount++;
 
-    const filename = heroName.toLowerCase().replace(/[^a-z0-9]/gi, '');
-    badge.src = `https://lexington1988.github.io/herowarslex/images/${filename}.png`;
+  const badge = document.createElement('img');
+  badge.className = 'hero-badge';
+  badge.title = heroName;
 
-    badge.style.left = dropdown.style.left;
-    badge.style.top = dropdown.style.top;
+  const filename = heroName.toLowerCase().replace(/[^a-z0-9]/gi, '');
+  badge.src = `https://lexington1988.github.io/herowarslex/images/${filename}.png`;
 
-    dropdown.remove();
-    container.appendChild(badge);
+  badge.style.left = dropdown.style.left;
+  badge.style.top = dropdown.style.top;
 
-    if (clickCount === 5) {
-      fillEnemyTeamFromScreenshot();
+  // ✅ Delete tag on click and update enemy list
+  badge.addEventListener('click', () => {
+    clickPositions[index] = null; // mark removed
+    clickCount--;
+
+    // Clear the matching enemy row
+    const row = document.querySelectorAll('#enemyTeam .hero-row')[index];
+    if (row) {
+      row.querySelector('select').value = '';
+      row.querySelector('input').value = '';
     }
-  };
+
+    badge.remove();
+  });
+
+  dropdown.remove();
+  container.appendChild(badge);
+
+  // 🟢 Always refresh enemy team as tags change
+  fillEnemyTeamFromScreenshot();
+};
+
+
 
   container.appendChild(dropdown);
 }
@@ -475,13 +494,14 @@ function handleImageClick(event) {
 
 function fillEnemyTeamFromScreenshot() {
   const rows = document.querySelectorAll('#enemyTeam .hero-row');
-  clickPositions.slice(0, 5).forEach((hero, i) => {
-    if (rows[i]) {
+  clickPositions.forEach((hero, i) => {
+    if (hero && rows[i]) {
       rows[i].querySelector('select').value = hero;
-      rows[i].querySelector('input').value = ''; // optional: clear power input
+      rows[i].querySelector('input').value = '';
     }
   });
 }
+
 function resetScreenshotTags() {
   clickCount = 0;
   clickPositions = [];
