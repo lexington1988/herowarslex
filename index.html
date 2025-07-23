@@ -2,72 +2,508 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lilac Flashcards App</title>
+  <title>Hero Wars Arena Assistant</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f7f3fb;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      margin: 0;
+      font-family: sans-serif;
+      background: #1f1f2e;
+      color: #fff;
       padding: 20px;
     }
+
     h1 {
-      color: #7e57c2;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
-      width: 100%;
       text-align: center;
-      margin: 20px 0;
+      color: #a287f4;
+      margin-bottom: 20px;
     }
-    .buttons {
+
+    .tabs {
       display: flex;
-      justify-content: space-around;
+      justify-content: center;
       gap: 10px;
-      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
-    button {
-      background: #9575cd;
-      color: white;
-      border: none;
+
+    .tabs button {
       padding: 10px 20px;
-      border-radius: 8px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 1rem;
+      background: #3a3a4e;
+      color: white;
     }
-    button:hover {
-      background: #7e57c2;
+
+    .tabs button.active {
+      background: #a287f4;
     }
-    #start-btn {
-      margin-top: 40px;
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #2c2c3e;
+      padding: 20px;
+      border-radius: 10px;
     }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .hero-list {
+      margin-top: 20px;
+    }
+
+    .hero-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      background: #3a3a4e;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .hero-item input {
+      width: 70px;
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+
+    .team-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .hero-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .hero-row select,
+    .hero-row input {
+      flex: 1;
+    }
+
+    .result-box {
+      background: #3a3a4e;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .preset-controls {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .preset-controls input,
+    .preset-controls select {
+      flex: 1;
+    }
+
     .hidden {
       display: none;
     }
+    .hero-tag {
+  background: #2c2c3e;
+  color: white;
+  border-radius: 4px;
+  border: 1px solid #555;
+}
+.hero-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px #000;
+  object-fit: cover;
+  z-index: 10;
+  pointer-events: none;
+}
+
+
   </style>
 </head>
 <body>
-  <h1>Flashcards (Lilac SRS)</h1>
-  <div id="card" class="card hidden">
-    <div id="card-text">Click Start to begin</div>
+  <h1>Hero Wars Arena Assistant</h1>
+
+  <div class="tabs">
+    <button onclick="showTab('rosterTab')" class="active">My Heroes</button>
+    <button onclick="showTab('arenaTab')">Arena Assistant</button>
   </div>
-  <div class="buttons hidden" id="rating-buttons">
-    <button onclick="rateCard(1)">Again</button>
-    <button onclick="rateCard(2)">Hard</button>
-    <button onclick="rateCard(3)">Good</button>
-    <button onclick="rateCard(4)">Easy</button>
+
+  <div id="rosterTab" class="container">
+    <select id="heroName"><option value="">-- Select Hero --</option></select>
+    <input type="number" id="heroPower" placeholder="Power Level">
+    <button onclick="addHero()">Add Hero</button>
+
+    <a href="#" id="manageLink" onclick="toggleManage()">Manage Heroes</a>
+    <div class="hero-list" id="heroList" style="display: none;"></div>
   </div>
-  <button id="start-btn" onclick="startReview()">Start</button>
-  <script src="script.js"></script>
+
+  <div id="arenaTab" class="container hidden">
+  <h2>Your Team</h2>
+  <div class="team-section" id="yourTeam"></div>
+
+  <div class="preset-controls">
+    <input type="text" id="presetName" placeholder="Preset Name">
+    <button onclick="savePreset()">💾 Save</button>
+  </div>
+
+  <div class="preset-controls">
+    <select id="loadPresetSelect"><option value="">-- Load Preset --</option></select>
+    <button onclick="loadPreset()">📥 Load</button>
+    <button onclick="deletePreset()">🗑️ Delete</button>
+  </div>
+
+  <h2>Enemy Team</h2>
+  <div class="team-section" id="enemyTeam"></div>
+
+  <label for="enemyTotalPower">Enemy Total Power (optional override):</label>
+  <input type="number" id="enemyTotalPower" placeholder="Enter total enemy power">
+
+  <button onclick="compareTeams()">Compare Teams</button>
+
+  <div class="result-box" id="resultBox" style="display:none;"></div>
+
+  <h2>📷 Screenshot Tagging (Optional)</h2>
+  <input type="file" accept="image/*" onchange="loadScreenshot(event)">
+  <br><br>
+    <button onclick="resetScreenshotTags()">🔄 Reset Tags</button>
+
+  <div id="screenshotContainer" style="position: relative;">
+    <img id="screenshot" style="max-width: 100%; display: none; border: 2px solid #444; border-radius: 10px;" onclick="handleImageClick(event)">
+  </div>
+</div>
+
+
+  <script>
+    // ---------- Shared Hero List ----------
+    const allHeroes = [
+      "Astaroth", "Aurora", "Galahad", "Keira", "K'arkh", "Jorgen", "Yasmin", "Helios",
+      "Celeste", "Martha", "Dorian", "Sebastian", "Jet", "Luther", "Ziri", "Mojo",
+      "Phobos", "Isaac", "Andvari", "Tristan", "Amira", "Fafnir", "Artemis", "Dark Star",
+      "Qing Mao", "Faceless", "Nebula", "Lian", "Peppy", "Cornelius", "Dante", "Rufus",
+      "Chabba", "Lilith", "Arachne", "Thea", "Fox", "Judge", "Elmir", "Satori",
+      "Cleaver", "Krista", "Lars", "Orion", "Heidi", "Maya", "Markus"
+    ];
+
+    // ---------- Roster ----------
+    let heroes = JSON.parse(localStorage.getItem('myHeroes')) || [];
+    let managing = false;
+
+    function saveHeroes() {
+      localStorage.setItem('myHeroes', JSON.stringify(heroes));
+    }
+
+    function populateHeroDropdown() {
+      const select = document.getElementById('heroName');
+      select.innerHTML = `<option value="">-- Select Hero --</option>` + allHeroes.map(h => `<option value="${h}">${h}</option>`).join('');
+    }
+
+    function addHero() {
+      const name = document.getElementById('heroName').value;
+      const power = parseInt(document.getElementById('heroPower').value);
+      if (!name || isNaN(power)) return alert("Please select a hero and enter power.");
+      const existing = heroes.find(h => h.name === name);
+      if (existing) {
+        existing.power = power;
+      } else {
+        heroes.push({ name, power });
+      }
+      saveHeroes();
+      renderHeroes();
+      document.getElementById('heroName').value = '';
+      document.getElementById('heroPower').value = '';
+    }
+
+    function deleteHero(name) {
+      heroes = heroes.filter(h => h.name !== name);
+      saveHeroes();
+      renderHeroes();
+    }
+
+    function toggleManage() {
+      managing = !managing;
+      document.getElementById('heroList').style.display = managing ? 'block' : 'none';
+      document.getElementById('manageLink').textContent = managing ? 'Hide Heroes' : 'Manage Heroes';
+    }
+
+    function renderHeroes() {
+      const list = document.getElementById('heroList');
+      list.innerHTML = '';
+      heroes.forEach((hero, index) => {
+        const item = document.createElement('div');
+        item.className = 'hero-item';
+        item.innerHTML = `
+          <span>${hero.name}</span>
+          <input type="number" value="${hero.power}" onchange="updateHeroPower(${index}, this.value)">
+          <button onclick="deleteHero('${hero.name}')">🗑️</button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function updateHeroPower(index, value) {
+      const newPower = parseInt(value);
+      if (!isNaN(newPower)) {
+        heroes[index].power = newPower;
+        saveHeroes();
+      }
+    }
+
+    // ---------- Tabs ----------
+    function showTab(tabId) {
+      document.getElementById('rosterTab').classList.add('hidden');
+      document.getElementById('arenaTab').classList.add('hidden');
+      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelector(`.tabs button[onclick="showTab('${tabId}')"]`).classList.add('active');
+    }
+
+    // ---------- Arena ----------
+    const counterMap = {
+      "Yasmin": ["Helios", "Arachne"],
+      "K'arkh": ["Andvari", "Isaac", "Luther"],
+      "Dante": ["Isaac", "Aurora"],
+      "Orion": ["Isaac", "Jorgen"],
+      "Lars": ["Jorgen", "Sebastian"],
+      "Satori": ["Sebastian"],
+      "Cleaver": ["Dorian", "Sebastian"],
+      "Krista": ["Jorgen"],
+      "Keira": ["Arachne", "Aurora"],
+      "Faceless": ["Andvari", "Isaac"],
+      "Helios": ["Cornelius"],
+      "Celeste": ["Jorgen"],
+      "Sebastian": ["Lian"]
+    };
+
+    function createTeamInputs(containerId, isEnemy) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const row = document.createElement('div');
+        row.className = 'hero-row';
+
+        const select = document.createElement('select');
+        select.innerHTML = `<option value="">-- Select Hero --</option>` + allHeroes.map(h => `<option value="${h}">${h}</option>`).join('');
+        select.name = isEnemy ? 'enemyHero' : 'yourHero';
+
+        const powerInput = document.createElement('input');
+        powerInput.type = 'number';
+        powerInput.placeholder = 'Power (optional)';
+        powerInput.name = isEnemy ? 'enemyPower' : 'yourPower';
+
+        row.appendChild(select);
+        row.appendChild(powerInput);
+        container.appendChild(row);
+      }
+    }
+
+    function getTeamData(containerId) {
+      const rows = document.querySelectorAll(`#${containerId} .hero-row`);
+      return Array.from(rows).map(row => {
+        const hero = row.querySelector('select').value;
+        const power = parseInt(row.querySelector('input').value) || null;
+        return { hero, power };
+      }).filter(h => h.hero);
+    }
+
+    function calculateTeamPower(team, isYourTeam) {
+      return team.reduce((total, { hero, power }) => {
+        if (power) return total + power;
+        const saved = heroes.find(h => h.name === hero);
+        return total + (saved?.power || 60000);
+      }, 0);
+    }
+
+    function compareTeams() {
+      const yourTeam = getTeamData('yourTeam');
+      const enemyTeam = getTeamData('enemyTeam');
+      const yourPower = calculateTeamPower(yourTeam, true);
+      const override = parseInt(document.getElementById('enemyTotalPower').value);
+      const enemyPower = !isNaN(override) ? override : calculateTeamPower(enemyTeam, false);
+
+      let html = `<strong>Your Team Power:</strong> ${yourPower}<br><strong>Enemy Team Power:</strong> ${enemyPower}<br>`;
+      html += yourPower > enemyPower
+        ? `<p style="color:lightgreen;">✅ You have the power advantage.</p>`
+        : `<p style="color:salmon;">⚠️ Enemy has power advantage.</p>`;
+
+      const counters = {};
+      enemyTeam.forEach(({ hero }) => {
+        if (counterMap[hero]) counters[hero] = counterMap[hero];
+      });
+
+      if (Object.keys(counters).length) {
+        html += `<hr><strong>Suggested Counters:</strong><br>`;
+        for (const [enemy, suggests] of Object.entries(counters)) {
+          html += `🛡️ <strong>${enemy}</strong> → ${suggests.join(', ')}<br>`;
+        }
+      }
+
+      document.getElementById('resultBox').innerHTML = html;
+      document.getElementById('resultBox').style.display = 'block';
+    }
+
+    function savePreset() {
+      const name = document.getElementById('presetName').value.trim();
+      if (!name) return alert("Enter a name.");
+      const team = getTeamData('yourTeam');
+      const presets = JSON.parse(localStorage.getItem('teamPresets')) || {};
+      presets[name] = team;
+      localStorage.setItem('teamPresets', JSON.stringify(presets));
+      loadPresets();
+    }
+
+    function loadPresets() {
+      const select = document.getElementById('loadPresetSelect');
+      select.innerHTML = `<option value="">-- Load Preset --</option>`;
+      const presets = JSON.parse(localStorage.getItem('teamPresets')) || {};
+      Object.keys(presets).forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+    }
+
+    function loadPreset() {
+      const name = document.getElementById('loadPresetSelect').value;
+      const presets = JSON.parse(localStorage.getItem('teamPresets')) || {};
+      const team = presets[name];
+      if (!team) return;
+      const rows = document.querySelectorAll('#yourTeam .hero-row');
+      team.forEach((h, i) => {
+        if (rows[i]) {
+          rows[i].querySelector('select').value = h.hero;
+          rows[i].querySelector('input').value = h.power || '';
+        }
+      });
+    }
+
+    function deletePreset() {
+      const name = document.getElementById('loadPresetSelect').value;
+      const presets = JSON.parse(localStorage.getItem('teamPresets')) || {};
+      delete presets[name];
+      localStorage.setItem('teamPresets', JSON.stringify(presets));
+      loadPresets();
+    }
+
+    // ---------- Init ----------
+    populateHeroDropdown();
+    renderHeroes();
+    createTeamInputs('yourTeam', false);
+    createTeamInputs('enemyTeam', true);
+    loadPresets();
+    // ----- Screenshot Tagging Logic -----
+let clickCount = 0;
+let clickPositions = [];
+
+function loadScreenshot(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const img = document.getElementById('screenshot');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+
+  clickCount = 0;
+  clickPositions = [];
+  document.querySelectorAll('.hero-tag').forEach(el => el.remove());
+}
+
+function handleImageClick(event) {
+  if (clickCount >= 5) return alert("You can only tag 5 heroes.");
+
+  const img = document.getElementById('screenshot');
+  const container = document.getElementById('screenshotContainer');
+  const rect = img.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  const dropdown = document.createElement('select');
+  dropdown.className = 'hero-tag';
+  dropdown.style.position = 'absolute';
+dropdown.style.left = `${x}px`;
+dropdown.style.top = `${y}px`;
+dropdown.style.transform = 'translate(-50%, -50%)';
+dropdown.style.zIndex = 10;
+dropdown.style.fontSize = '10px';
+dropdown.style.padding = '2px 4px';
+dropdown.style.width = '100px';
+
+
+  dropdown.innerHTML = `<option value="">-- Select Hero --</option>` +
+    allHeroes.map(h => `<option value="${h}">${h}</option>`).join('');
+
+  dropdown.onchange = () => {
+  const heroName = dropdown.value;
+  if (!heroName) return;
+
+  // Save selection
+  clickPositions.push(heroName);
+  clickCount++;
+
+  // Create hero image badge
+const img = document.createElement('img');
+img.className = 'hero-badge';
+img.title = heroName;
+
+// Convert name to filename: e.g., "K'arkh" → "karkh.png"
+const filename = heroName.toLowerCase().replace(/[^a-z0-9]/gi, '');
+img.src = `images/${filename}.png`;
+
+img.style.position = 'absolute';
+img.style.left = dropdown.style.left;
+img.style.top = dropdown.style.top;
+img.style.transform = 'translate(-50%, -50%)';
+
+dropdown.remove();
+container.appendChild(img);
+
+
+  // Position the badge where dropdown was
+  badge.style.position = 'absolute';
+  badge.style.left = dropdown.style.left;
+  badge.style.top = dropdown.style.top;
+  badge.style.transform = 'translate(-50%, -50%)';
+  badge.title = heroName;
+
+  dropdown.remove();
+  container.appendChild(badge);
+
+  if (clickCount === 5) {
+    fillEnemyTeamFromScreenshot();
+  }
+};
+
+
+  container.appendChild(dropdown);
+}
+
+function fillEnemyTeamFromScreenshot() {
+  const rows = document.querySelectorAll('#enemyTeam .hero-row');
+  clickPositions.slice(0, 5).forEach((hero, i) => {
+    if (rows[i]) {
+      rows[i].querySelector('select').value = hero;
+      rows[i].querySelector('input').value = ''; // optional: clear power input
+    }
+  });
+}
+function resetScreenshotTags() {
+  clickCount = 0;
+  clickPositions = [];
+  document.querySelectorAll('.hero-tag').forEach(el => el.remove());
+}
+
+  </script>
 </body>
 </html>
